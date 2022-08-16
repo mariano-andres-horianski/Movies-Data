@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import FormView
+from django.core.cache import cache
+from django.conf import settings
 import requests
 from .forms import SearchForm
 
@@ -19,8 +21,14 @@ class ShallowSearchView(FormView):
         Default is Search, which includes all three of them.
         """
         url = f"https://imdb-api.com/en/API/{endpoint}/{self.api_key}/{query}"
-        response = requests.request("GET", url)
+        if cache.get(url):
+            response = cache.get(url)
+            print("data succesfully cached")
+            return response.json()
 
+        response = requests.request("GET", url)
+        print("data not cached")
+        cache.set(url, response, 300)
         return response.json()
 
     def get_context_data(self, **kwargs):
