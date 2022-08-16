@@ -1,0 +1,21 @@
+{% extends "movies_data/base.html" %}
+
+{% block main %}
+  {% block added_shows %}
+
+    {% for show in added %}
+      <div class="added-titles" ></div>
+    {% endfor %}
+
+  {% endblock added_shows %}
+
+  {% block search %}
+    <div id="title-search">
+        <form action="{% url 'movies-page:get_title' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+        </form>
+    </div>
+  {% endblock search %}
+{% endblock main %}
+

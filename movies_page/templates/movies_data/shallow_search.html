@@ -1,0 +1,19 @@
+{% extends "movies_data/base.html" %}
+
+{% block main %}
+
+<div class="search-form" >
+    <form action="{% url 'movies_page:shallow_search' %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">search</button>
+    </form>
+</div>
+
+{% if results %}
+
+<p> {{results}} </p>
+
+{% endif %}
+
+{% endblock main %}

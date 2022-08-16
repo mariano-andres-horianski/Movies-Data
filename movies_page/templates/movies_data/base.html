@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <a href="{% url 'movies_page:home' %}"> <li>Main Page</li> </a>
+            <a> <li>Trending</li> </a>
+            <a> <li>My list</li> </a>
+        </ul>
+    </nav>
+    <main>
+    {% block main %}
+    <p>
+        Movie DB Page.
+    </p>
+    {% endblock main %}
+    </main>
+</body>
+</html>
