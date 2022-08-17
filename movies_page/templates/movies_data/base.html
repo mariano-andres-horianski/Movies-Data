@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body>
-    <nav>
-        <ul>
-            <a href="{% url 'movies_page:home' %}"> <li>Main Page</li> </a>
-            <a> <li>Trending</li> </a>
-            <a> <li>My list</li> </a>
+    <nav id="nav-bar">
+        <ul id="nav-list">
+            <li><a href="{% url 'movies_page:home' %}"><button> Main Page </button></a></li>
+            <li><a><button> Trending </button></a></li>
+            <li><a><button> My list </button></a></li>
+            <li><a href="{% url 'users:login' %}"><button> Log in</button></a></li>
+            <li><a href="{% url 'users:register' %}"><button> Sign Up</button></a></li>
         </ul>
     </nav>
     <main>

@@ -23,11 +23,9 @@ class ShallowSearchView(FormView):
         url = f"https://imdb-api.com/en/API/{endpoint}/{self.api_key}/{query}"
         if cache.get(url):
             response = cache.get(url)
-            print("data succesfully cached")
             return response.json()
 
         response = requests.request("GET", url)
-        print("data not cached")
         cache.set(url, response, 300)
         return response.json()
 
