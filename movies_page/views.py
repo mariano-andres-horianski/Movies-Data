@@ -1,9 +1,16 @@
-from django.shortcuts import render
-from django.views.generic import FormView
+from gc import collect
+from http.client import HTTPResponse
+from django.shortcuts import render, redirect
+from django.views.generic import FormView, TemplateView
+from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.conf import settings
-import requests
-from .forms import SearchForm
+from django.http import HttpResponse
+from asgiref.sync import async_to_sync
+
+import requests, asyncio, aiohttp
+from .forms import SearchForm, TitleForm
+from .models import TitleModel
 
 from decouple import config
 
@@ -29,11 +36,6 @@ class ShallowSearchView(FormView):
         cache.set(url, response, 300)
         return response.json()
 
-    def get_context_data(self, **kwargs):
-        context = super(ShallowSearchView, self).get_context_data(**kwargs)
-        context['form'] = SearchForm()
-        return context
-
     def post(self, request):
         
         form = SearchForm(request.POST)
@@ -48,6 +50,54 @@ class ShallowSearchView(FormView):
         form = SearchForm()
 
         return render(request, "movies_data/shallow_search.html", {'form': form, 'results':text['results']})
+
+async def make_request(session, url):
+    #Use aiohttp non-blocking version of requests.get
+    async with session.get(url) as res:
+        movies_data = await res.json()
+        return movies_data
+
+async def collect_requests(titles_list):
+    """
+    From a list of titles, request additional data about them.
+    A view created mainly with the purpose of using asyncio and Django async functions for learning,
+    also useful for not having to save data that may change over time (such as rating or voters number).
+    """
+    IMDB_requests = []
+    titles_data = []
+    api_key = config('API_KEY')
+
+    async with aiohttp.ClientSession() as session:
+        for title in titles_list:
+            title_id = title.id
+            url = f"https://imdb-api.com/en/API/Title/{api_key}/{title_id}"
+            IMDB_requests.append(asyncio.ensure_future(make_request(session, url)))
+            
+        titles_res = await asyncio.gather(*IMDB_requests)
+        
+    for data in titles_res:
+        titles_data.append(data)
+    
+    return titles_data
+
+@login_required
+def titles_list_view(request):
+    #Do the synchronous part of the process in this function
+    if request.method == "POST":
+        form = TitleForm(data=request.POST)
+        if form.is_valid():
+            title = form.save(commit=False)
+            title.owner = request.user
+            title.save()
+            return redirect("movies_page:titles-list")
+
+    titles_list = TitleModel.objects.filter(owner=request.user)
+
+    #Move the async parts of the process away
+    titles_data = async_to_sync(collect_requests)(list(titles_list))
+
+    return render(request, "movies_data/titles_list.html", {"titles_data": titles_data})
+
 
 def get_trending(request):
     """

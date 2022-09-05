@@ -12,9 +12,12 @@
         <ul id="nav-list">
             <li><a href="{% url 'movies_page:home' %}"><button> Main Page </button></a></li>
             <li><a><button> Trending </button></a></li>
-            <li><a><button> My list </button></a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'movies_page:titles-list' %}"><button> My list </button></a></li>
+            {% endif %}
             <li><a href="{% url 'users:login' %}"><button> Log in</button></a></li>
             <li><a href="{% url 'users:register' %}"><button> Sign Up</button></a></li>
+            <li><a href="{% url 'users:logout' %}">Log out</a></li>
         </ul>
     </nav>
     <main>
@@ -24,5 +27,6 @@
     </p>
     {% endblock main %}
     </main>
+    
 </body>
 </html>

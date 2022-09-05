@@ -1,0 +1,29 @@
+{% extends "movies_data/base.html" %}
+
+{% block main %}
+  {% block added_movies %}
+
+    {% if titles_data %}
+      {% for title in titles_data %}
+        <div class="added-titles" >
+          <img class="list-title-image" src="{{ title.image }}">
+          <h2 class="list-title-name"> {{ title.fullTitle }} </h2>
+          <p class="list-title-rating"></p>
+          <p class="list-title-description"></p>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>no titles added</p>
+    {% endif %}
+    
+  {% endblock added_movies %}
+  {% block search %}
+    
+  <div id="shallow-search">
+    <a href="{% url 'movies_page:shallow_search' %}"><button >Search</button></a>
+  </div>
+  
+  {% endblock search %}
+{% endblock main %}
+
+
