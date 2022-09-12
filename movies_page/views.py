@@ -8,6 +8,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from asgiref.sync import async_to_sync
 
+
 import requests, asyncio, aiohttp
 from .forms import SearchForm, TitleForm
 from .models import TitleModel
@@ -52,7 +53,7 @@ class ShallowSearchView(FormView):
         return render(request, "movies_data/shallow_search.html", {'form': form, 'results':text['results']})
 
 async def make_request(session, url):
-    #Use aiohttp non-blocking version of requests.get
+    #Use aiohttp non-blocking version of requests.get()
     async with session.get(url) as res:
         movies_data = await res.json()
         return movies_data
@@ -92,11 +93,15 @@ def titles_list_view(request):
             return redirect("movies_page:titles-list")
 
     titles_list = TitleModel.objects.filter(owner=request.user)
-
+    
     #Move the async parts of the process away
     titles_data = async_to_sync(collect_requests)(list(titles_list))
-
     return render(request, "movies_data/titles_list.html", {"titles_data": titles_data})
+    
+def delete_title(request, id):
+    title = TitleModel.objects.filter(id=id, owner=request.user)
+    title.delete()
+    return redirect("movies_page:titles-list")
 
 
 def get_trending(request):

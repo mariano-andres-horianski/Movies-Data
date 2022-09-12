@@ -15,9 +15,13 @@
             {% if user.is_authenticated %}
             <li><a href="{% url 'movies_page:titles-list' %}"><button> My list </button></a></li>
             {% endif %}
+            {% if user.is_authenticated %}
+            <p>Hello, {{user}}</p>
+            <li><a href="{% url 'users:logout' %}">Log out</a></li>
+            {% else %}
             <li><a href="{% url 'users:login' %}"><button> Log in</button></a></li>
             <li><a href="{% url 'users:register' %}"><button> Sign Up</button></a></li>
-            <li><a href="{% url 'users:logout' %}">Log out</a></li>
+            {% endif %}
         </ul>
     </nav>
     <main>

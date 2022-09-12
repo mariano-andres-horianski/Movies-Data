@@ -1,3 +1,6 @@
+body{
+    background-color: #ac6421;
+}
 #nav-bar{
     width: 100%;
     height: 14%;
@@ -15,9 +18,18 @@
 #nav-list li{
     margin: auto;
 }
-
-#shallow-search{
-    margin-left: 30%;
+button{
+    background-color: #3A5F74;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+}
+button:hover{
+    background-color: #1f5574;
+}
+#shallow-search button{
+    width: 10%;
+    margin-left: 45%;
 }
 
 .search-form{
