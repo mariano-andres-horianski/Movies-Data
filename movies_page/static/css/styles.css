@@ -27,7 +27,7 @@ button{
 button:hover{
     background-color: #1f5574;
 }
-#shallow-search button{
+#shallow-search{
     width: 10%;
     margin-left: 45%;
 }
