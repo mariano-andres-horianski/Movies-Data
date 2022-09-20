@@ -7,7 +7,7 @@ class TitleModel(models.Model):
     id = models.CharField(primary_key=True, max_length=20)
     title_name = models.CharField(max_length=100)
     image_url = models.CharField(max_length=1000)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ManyToManyField(User)
     
     def __str__(self):
         return self.id

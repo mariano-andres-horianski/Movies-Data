@@ -2,8 +2,22 @@
 
 {% block main %}
 
-    {% for title in trending %}
-
+    {% for title in trending_movies %}
+      <div class="added-titles" >
+        <img class="list-title-image" src="{{ title.image }}">
+        <h2 class="list-title-name"> {{ title.fullTitle }} </h2>
+        <p class="list-title-rating"> {{ title.imDbRating }} </p>
+        <p class="list-title-voters"> {{ title.imDbRatingCount }} </p>
+      </div>
+    {% endfor %}
+    {% for title in trending_series %}
+      <div class="added-titles" >
+        <img class="list-title-image" src="{{ title.image }}">
+        <h2 class="list-title-name"> {{ title.fullTitle }} </h2>
+        <p class="list-title-rating"> {{ title.imDbRating }} </p>
+        <p class="list-title-voters"> {{ title.imDbRatingVotes }} </p>
+        <p class="list-title-description"> {{ title.plot }} </p>
+      </div>
     {% endfor %}
     
 {% endblock main %}

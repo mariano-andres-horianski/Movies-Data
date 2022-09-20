@@ -11,7 +11,7 @@
     <nav id="nav-bar">
         <ul id="nav-list">
             <li><a href="{% url 'movies_page:home' %}"><button> Main Page </button></a></li>
-            <li><a><button> Trending </button></a></li>
+            <li><a href="{% url 'movies_page:trending' %}"><button> Trending </button></a></li>
             {% if user.is_authenticated %}
             <li><a href="{% url 'movies_page:titles-list' %}"><button> My list </button></a></li>
             {% endif %}

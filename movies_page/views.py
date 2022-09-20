@@ -8,7 +8,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from asgiref.sync import async_to_sync
 
-
+from .functions import shallow_search 
 import requests, asyncio, aiohttp
 from .forms import SearchForm, TitleForm
 from .models import TitleModel
@@ -23,20 +23,6 @@ class ShallowSearchView(FormView):
     form_class = SearchForm
     api_key = config('API_KEY')
 
-    def shallow_search(self, query, endpoint="Search"):
-        """
-        Make the request based on SearchSeries, SearchMovie or SearchName endpoints.
-        Default is Search, which includes all three of them.
-        """
-        url = f"https://imdb-api.com/en/API/{endpoint}/{self.api_key}/{query}"
-        if cache.get(url):
-            response = cache.get(url)
-            return response.json()
-
-        response = requests.request("GET", url)
-        cache.set(url, response, 300)
-        return response.json()
-
     def post(self, request):
         
         form = SearchForm(request.POST)
@@ -46,7 +32,7 @@ class ShallowSearchView(FormView):
             # and not store any data. 
             query = form.cleaned_data.get("query")
             endpoint = form.cleaned_data.get("search_type")
-            text = self.shallow_search(query, endpoint=endpoint)
+            text = shallow_search(endpoint=endpoint, query=query)
         
         form = SearchForm()
 
@@ -88,8 +74,8 @@ def titles_list_view(request):
         form = TitleForm(data=request.POST)
         if form.is_valid():
             title = form.save(commit=False)
-            title.owner = request.user
             title.save()
+            title.owner.add(request.user)
             return redirect("movies_page:titles-list")
 
     titles_list = TitleModel.objects.filter(owner=request.user)
@@ -103,21 +89,22 @@ def delete_title(request, id):
     title.delete()
     return redirect("movies_page:titles-list")
 
+class TrendingView(TemplateView):
+    """
+    Render a view with the most popular titles.
+    It also serves as a wrapper for get_trending function.
+    """
+    template_name = "movies_data/trending.html"
+    api_key = config('API_KEY')
 
-def get_trending(request):
-    """
-    Render a page with the most popular titles last week.
-    """
-    pass
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["trending_movies"] = shallow_search("MostPopularMovies")["items"]
+        context["trending_series"] = shallow_search("MostPopularTVs")["items"]
+        return context
 
-def get_score(request):
+def set_score(request):
     """
-    Get the score of a title and update it.
-    """
-    pass
-
-def get_voters_number(request):
-    """
-    Get the number of voters for a title's score and update it.
+    Put a personal score on a title.
     """
     pass
