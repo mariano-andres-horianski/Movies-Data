@@ -10,8 +10,8 @@ def shallow_search(endpoint="Search", query=""):
         url = f"https://imdb-api.com/en/API/{endpoint}/{api_key}/{query}"
         if cache.get(url):
             response = cache.get(url)
-            return response.json()
+            return response
 
-        response = requests.request("GET", url)
+        response = requests.request("GET", url).json()
         cache.set(url, response, 3600)
-        return response.json()
+        return response

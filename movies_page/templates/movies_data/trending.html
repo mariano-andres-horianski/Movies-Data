@@ -1,22 +1,39 @@
 {% extends "movies_data/base.html" %}
 
 {% block main %}
-
+    <h1 style="margin-left: 45%; margin-right: auto;">Movies!</h1>
     {% for title in trending_movies %}
-      <div class="added-titles" >
+      <div class="added-title" >
         <img class="list-title-image" src="{{ title.image }}">
         <h2 class="list-title-name"> {{ title.fullTitle }} </h2>
         <p class="list-title-rating"> {{ title.imDbRating }} </p>
         <p class="list-title-voters"> {{ title.imDbRatingCount }} </p>
+      
+        <form action="{% url 'movies_page:titles-list' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="id" value="{{title.id}}">
+          <input type="hidden" name="title_name" value="{{title.fullTitle}}">
+          <input type="hidden" name="image_url" value="{{title.image}}">
+          <button type="submit">Add to My List</button>
+        </form>
       </div>
     {% endfor %}
+    <h1 style="margin-left: 45%; margin-right: auto;">TV shows!</h1>
     {% for title in trending_series %}
-      <div class="added-titles" >
+      <div class="added-title" >
         <img class="list-title-image" src="{{ title.image }}">
         <h2 class="list-title-name"> {{ title.fullTitle }} </h2>
         <p class="list-title-rating"> {{ title.imDbRating }} </p>
-        <p class="list-title-voters"> {{ title.imDbRatingVotes }} </p>
+        <p class="list-title-voters"> {{ title.imDbRatingCount }} </p>
         <p class="list-title-description"> {{ title.plot }} </p>
+      
+        <form action="{% url 'movies_page:titles-list' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="id" value="{{title.id}}">
+          <input type="hidden" name="title_name" value="{{title.fullTitle}}">
+          <input type="hidden" name="image_url" value="{{title.image}}">
+          <button type="submit">Add to My List</button>
+        </form>
       </div>
     {% endfor %}
     

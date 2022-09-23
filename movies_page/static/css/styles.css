@@ -23,6 +23,7 @@ button{
     border: none;
     border-radius: 5px;
     padding: 5px;
+    font-size: 15px;
 }
 button:hover{
     background-color: #1f5574;
@@ -30,6 +31,7 @@ button:hover{
 #shallow-search{
     width: 10%;
     margin-left: 45%;
+    margin-top: 5px;
 }
 
 .search-form{
@@ -46,12 +48,46 @@ button:hover{
     height: 115px;
     float: left;
 }
+
 .list-title-image{
     width: 115px;
     height: 115px;
     float: left;
+    margin-top: 15px;
 }
-.added-titles{
+.added-title{
+    border: 5px solid grey;
     height: 150px;
     margin: 5px;
+    display: flex;
+    width: 44%;
+    margin-left: 28%;
+    margin-right: 33%;
+    flex-direction: row;
+}
+.title-header{
+    display: flex;
+    width: 100%;
+    height: 30%;
+    justify-content: space-between;
+}
+.title-plot{
+    margin: auto;
+    margin-top: 10px;
+    float: right;
+}
+.delete-title-button{
+    float: right;
+}
+.title-card-right{
+    flex-direction: column;
+    width: 100%;
+    margin-left: 7px;
+}
+.list-title-name{
+    margin-top: 0px;
+}
+.list-title-rating{
+    margin-left: 5px;
+    margin-right: 5px;
 }

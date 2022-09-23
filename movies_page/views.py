@@ -1,5 +1,6 @@
 from gc import collect
 from http.client import HTTPResponse
+from pipes import Template
 from django.shortcuts import render, redirect
 from django.views.generic import FormView, TemplateView
 from django.contrib.auth.decorators import login_required
@@ -44,7 +45,7 @@ async def make_request(session, url):
         movies_data = await res.json()
         return movies_data
 
-async def collect_requests(titles_list):
+async def collect_requests(titles_list, user):
     """
     From a list of titles, request additional data about them.
     A view created mainly with the purpose of using asyncio and Django async functions for learning,
@@ -53,7 +54,7 @@ async def collect_requests(titles_list):
     IMDB_requests = []
     titles_data = []
     api_key = config('API_KEY')
-
+    
     async with aiohttp.ClientSession() as session:
         for title in titles_list:
             title_id = title.id
@@ -81,9 +82,9 @@ def titles_list_view(request):
     titles_list = TitleModel.objects.filter(owner=request.user)
     
     #Move the async parts of the process away
-    titles_data = async_to_sync(collect_requests)(list(titles_list))
+    titles_data = async_to_sync(collect_requests)(list(titles_list), request.user)
     return render(request, "movies_data/titles_list.html", {"titles_data": titles_data})
-    
+
 def delete_title(request, id):
     title = TitleModel.objects.filter(id=id, owner=request.user)
     title.delete()
@@ -102,9 +103,3 @@ class TrendingView(TemplateView):
         context["trending_movies"] = shallow_search("MostPopularMovies")["items"]
         context["trending_series"] = shallow_search("MostPopularTVs")["items"]
         return context
-
-def set_score(request):
-    """
-    Put a personal score on a title.
-    """
-    pass

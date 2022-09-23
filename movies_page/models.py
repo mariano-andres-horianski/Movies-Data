@@ -8,6 +8,6 @@ class TitleModel(models.Model):
     title_name = models.CharField(max_length=100)
     image_url = models.CharField(max_length=1000)
     owner = models.ManyToManyField(User)
-    
+
     def __str__(self):
         return self.id
