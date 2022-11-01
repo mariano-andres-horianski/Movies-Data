@@ -9,5 +9,5 @@ urlpatterns = [
     #add login require to titles list urls
     path("titles-list", views.titles_list_view, name='titles-list'),
     path("titles-list/delete/<id>", views.delete_title, name='delete_title'),
-    path("trending", views.TrendingView.as_view(), name='trending')
+    path("trending", views.TrendingView.as_view(), name='trending'),
 ]

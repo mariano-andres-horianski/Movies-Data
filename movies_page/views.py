@@ -9,10 +9,11 @@ from django.conf import settings
 from django.http import HttpResponse
 from asgiref.sync import async_to_sync
 
+import json
 from .functions import shallow_search 
 import requests, asyncio, aiohttp
-from .forms import SearchForm, TitleForm
-from .models import TitleModel
+from .forms import SearchForm, TitleForm, AddedTitleForm
+from .models import AddedTitleModel, TitleModel
 
 from decouple import config
 
@@ -29,23 +30,24 @@ class ShallowSearchView(FormView):
         form = SearchForm(request.POST)
 
         if form.is_valid():
-            #As of now, I'm only looking to use this forms to make the requested search (which may be cached later with redis)
+            # As of now, I'm only looking to use this forms to make the requested search (which may be cached later with redis)
             # and not store any data. 
             query = form.cleaned_data.get("query")
             endpoint = form.cleaned_data.get("search_type")
             text = shallow_search(endpoint=endpoint, query=query)
         
         form = SearchForm()
-
+        
         return render(request, "movies_data/shallow_search.html", {'form': form, 'results':text['results']})
 
 async def make_request(session, url):
-    #Use aiohttp non-blocking version of requests.get()
+    # Use aiohttp non-blocking version of requests.get()
     async with session.get(url) as res:
         movies_data = await res.json()
+
         return movies_data
 
-async def collect_requests(titles_list, user):
+async def collect_requests(titles_list):
     """
     From a list of titles, request additional data about them.
     A view created mainly with the purpose of using asyncio and Django async functions for learning,
@@ -57,8 +59,7 @@ async def collect_requests(titles_list, user):
     
     async with aiohttp.ClientSession() as session:
         for title in titles_list:
-            title_id = title.id
-            url = f"https://imdb-api.com/en/API/Title/{api_key}/{title_id}"
+            url = f"https://imdb-api.com/en/API/Title/{api_key}/{title}"
             IMDB_requests.append(asyncio.ensure_future(make_request(session, url)))
             
         titles_res = await asyncio.gather(*IMDB_requests)
@@ -70,23 +71,46 @@ async def collect_requests(titles_list, user):
 
 @login_required
 def titles_list_view(request):
-    #Do the synchronous part of the process in this function
-    if request.method == "POST":
-        form = TitleForm(data=request.POST)
-        if form.is_valid():
-            title = form.save(commit=False)
-            title.save()
-            title.owner.add(request.user)
-            return redirect("movies_page:titles-list")
+    # Ignore this code for now
+    # Mistakes were made in the heat of passion
 
-    titles_list = TitleModel.objects.filter(owner=request.user)
+    # Do the synchronous part of the process in this function
+    if request.method == "POST":
+        if not TitleModel.objects.filter(id=request.POST["id"]).exists():
+            form = TitleForm(data=request.POST)
+            if form.is_valid():
+                # Save the title in the table in order to cache it's data later
+                title = form.save(commit=False)
+                title.save()
+                
+                # Once saved, fetch it from the DB and add it to the list.
+                title = TitleModel.objects.get(id=request.POST["id"])
+                AddedTitleModel.objects.create(owner=request.user, title=title)
+                return redirect("movies_page:titles-list")
+
+    titles_list = list(AddedTitleModel.objects.filter(owner=request.user))
+    id_list = TitleModel.objects.values_list('id', flat=True)
+    stored_titles = list()
     
-    #Move the async parts of the process away
-    titles_data = async_to_sync(collect_requests)(list(titles_list), request.user)
+    # Check if the title is stored in the DB, and if it is don't fetch it from the API.
+    # otherwise, retrieve it later from the DB.
+    for title in titles_list:
+        if str(title) in id_list:
+            titles_list.remove(title)
+            stored_titles.append(TitleModel.objects.get(id=str(title)))
+
+    titles_list = map(str, titles_list)
+
+    # Move the async parts of the process away
+    titles_data = async_to_sync(collect_requests)(list(titles_list))
+    for title in stored_titles:
+        titles_data.append(title.title_data)
+    
     return render(request, "movies_data/titles_list.html", {"titles_data": titles_data})
 
 def delete_title(request, id):
-    title = TitleModel.objects.filter(id=id, owner=request.user)
+    title = TitleModel.objects.filter(id=id)
+    title = AddedTitleModel.objects.filter(owner=request.user, title=title)
     title.delete()
     return redirect("movies_page:titles-list")
 

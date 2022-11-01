@@ -18,8 +18,7 @@
     <form action="{% url 'movies_page:titles-list' %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="id" value="{{result.id}}">
-        <input type="hidden" name="title_name" value="{{result.title}}">
-        <input type="hidden" name="image_url" value="{{result.image}}">
+        <input type="hidden" name="title_data" value="{{result}}">
         <button type="submit">Add to My List</button>
     </form>
 </div>

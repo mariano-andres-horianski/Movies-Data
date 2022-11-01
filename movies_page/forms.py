@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import TitleModel
+from .models import TitleModel, AddedTitleModel
 
 SEARCH_TYPE = (
     ("Search", "Search anything"),
@@ -16,8 +16,15 @@ class SearchForm(forms.Form):
     search_type = forms.ChoiceField(choices=SEARCH_TYPE)
 
 class TitleForm(forms.ModelForm):
-    """Form to add a title to the user's list."""
+    """Form to add a title to the DB for cache."""
 
     class Meta:
         model = TitleModel
-        fields = ['id', 'title_name', 'image_url']
+        fields = ['id', 'title_data']
+
+class AddedTitleForm(forms.ModelForm):
+    """Form to add a title to the user's list."""
+
+    class Meta:
+        model = AddedTitleModel
+        fields = ['owner', 'title']
