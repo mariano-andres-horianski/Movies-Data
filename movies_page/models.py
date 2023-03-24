@@ -33,9 +33,11 @@ class AddedTitleModel(models.Model):
 
 
 class RatingModel(models.Model):
-    """A class to store ratings given by users to titles.
+    """
+    A class to store ratings given by users to titles.
     By using a one-to-one with added_title, we avoid data repetition that could come with storing titles or title-rating pairs more than once
-    and also avoid complicating data search within our own project."""
+    and also avoid complicating data search within our own project.
+    """
 
     added_title = models.OneToOneField(AddedTitleModel, on_delete=models.CASCADE)
     rating_value = models.IntegerField(
