@@ -90,7 +90,6 @@ def titles_list_view(request):
     titles_ids = [title.title.id for title in added_titles]
 
     # Manually request each title in order to retrieve information that was not provided by the shallow search.
-    # It's also useful for updating variable data such as rating or number of votes.
     titles_data = async_to_sync(collect_requests)(titles_ids)
 
     # Pass the titles_data as context to the template
