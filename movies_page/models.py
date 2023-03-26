@@ -18,7 +18,7 @@ class TitleModel(models.Model):
     title_data = models.TextField()
 
     def __str__(self):
-        return self.id
+        return self.title_data
 
 
 class AddedTitleModel(models.Model):

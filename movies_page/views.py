@@ -54,7 +54,6 @@ async def collect_requests(titles_list):
     also useful for not having to save data that may change over time (such as rating or voters number).
     """
     IMDB_requests = []
-    titles_data = []
     api_key = config('API_KEY')
     
     async with aiohttp.ClientSession() as session:
@@ -63,54 +62,43 @@ async def collect_requests(titles_list):
             IMDB_requests.append(asyncio.ensure_future(make_request(session, url)))
             
         titles_res = await asyncio.gather(*IMDB_requests)
-        
-    for data in titles_res:
-        titles_data.append(data)
-    
-    return titles_data
+    return titles_res
 
 @login_required
 def titles_list_view(request):
-    # Ignore this code for now
-    # Mistakes were made in the heat of passion
-
     # Do the synchronous part of the process in this function
     if request.method == "POST":
-        if not TitleModel.objects.filter(id=request.POST["id"]).exists():
+        title_id = request.POST.get("id")
+
+        if not TitleModel.objects.filter(id=title_id).exists():
             form = TitleForm(data=request.POST)
             if form.is_valid():
-                # Save the title in the table in order to cache it's data later
+                title_data = shallow_search("Title", title_id)
                 title = form.save(commit=False)
+                title.title_data = title_data
                 title.save()
-                
-                # Once saved, fetch it from the DB and add it to the list.
-                title = TitleModel.objects.get(id=request.POST["id"])
+
+                title = TitleModel.objects.get(id=title_id)
                 AddedTitleModel.objects.create(owner=request.user, title=title)
+
                 return redirect("movies_page:titles-list")
 
-    titles_list = list(AddedTitleModel.objects.filter(owner=request.user))
-    id_list = TitleModel.objects.values_list('id', flat=True)
-    stored_titles = list()
-    
-    # Check if the title is stored in the DB, and if it is don't fetch it from the API.
-    # otherwise, retrieve it later from the DB.
-    for title in titles_list:
-        if str(title) in id_list:
-            titles_list.remove(title)
-            stored_titles.append(TitleModel.objects.get(id=str(title)))
+    # Retrieve the titles added by the user
+    added_titles = AddedTitleModel.objects.filter(owner=request.user)
 
-    titles_list = map(str, titles_list)
+    # Create a list of the ids of the added titles
+    titles_ids = [title.title.id for title in added_titles]
 
-    # Move the async parts of the process away
-    titles_data = async_to_sync(collect_requests)(list(titles_list))
-    for title in stored_titles:
-        titles_data.append(title.title_data)
-    
+    # Manually request each title in order to retrieve information that was not provided by the shallow search.
+    # It's also useful for updating variable data such as rating or number of votes.
+    titles_data = async_to_sync(collect_requests)(titles_ids)
+
+    # Pass the titles_data as context to the template
     return render(request, "movies_data/titles_list.html", {"titles_data": titles_data})
 
 def delete_title(request, id):
     title = TitleModel.objects.filter(id=id)
-    title = AddedTitleModel.objects.filter(owner=request.user, title=title)
+    title = AddedTitleModel.objects.get(owner=request.user, title_id=id)
     title.delete()
     return redirect("movies_page:titles-list")
 
