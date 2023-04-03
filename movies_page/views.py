@@ -92,7 +92,6 @@ def titles_list_view(request):
     # Manually request each title in order to retrieve information that was not provided by the shallow search.
     titles_data = async_to_sync(collect_requests)(titles_ids)
 
-    # Pass the titles_data as context to the template
     return render(request, "movies_data/titles_list.html", {"titles_data": titles_data})
 
 def delete_title(request, id):
